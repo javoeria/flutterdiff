@@ -10,7 +10,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.22.0
+          flutter-version: 3.24.0
 
       - name: Get Flutter version
         run: |
@@ -20,6 +20,7 @@ jobs:
 
       - name: Check if version already exists
         run: |
+          git fetch --tags
           if git rev-parse "v${{ env.version }}" >/dev/null 2>&1; then
             echo "Version already exists. No update needed."
             echo "skip=true" >> $GITHUB_ENV
