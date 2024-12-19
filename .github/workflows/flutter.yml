@@ -11,4 +11,21 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.0
-      - run: flutter --version
+
+      - name: Get Flutter version
+        run: |
+          VERSION=$(flutter --version | awk '/Flutter/ {print $2}')
+          echo "version=$VERSION" >> $GITHUB_ENV
+
+      - name: Display Flutter version
+        run: echo "Flutter version ${{ env.version }}"
+
+      - name: Create new Flutter project
+        run: flutter create .
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "${{ env.version }}"
+          git tag "v${{ env.version }}"
+          git push origin main --tags
