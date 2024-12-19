@@ -10,26 +10,40 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.19.0
+          flutter-version: 3.22.0
 
       - name: Get Flutter version
         run: |
           VERSION=$(flutter --version | awk '/Flutter [0-9]+\.[0-9]+\.[0-9]+/ {print $2}')
-          echo "version=$VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
+          echo "Flutter ${{ env.version }}"
 
-      - name: Display Flutter version
-        run: echo "Flutter version ${{ env.version }}"
+      - name: Check if version already exists
+        run: |
+          if git rev-parse "v${{ env.version }}" >/dev/null 2>&1; then
+            echo "Version already exists. No update needed."
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+
+      - name: Clean project directory
+        if: env.skip == 'false'
+        run: |
+          find . -not -path "./.git*" -not -path "./.github*" -exec rm -rf {} +
 
       - name: Create new Flutter project
+        if: env.skip == 'false'
         run: flutter create .
 
       - name: Configure Git
+        if: env.skip == 'false'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
       - name: Commit and push changes
+        if: env.skip == 'false'
         run: |
           git add .
           git commit -m "${{ env.version }}"
